@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "msc-cs110-seismoi-konta-mou",
+    "slug": "msc-cs110-seismoi-konta-mou",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {},
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to find earthquakes near you."
+        }
+      ]
+    ]
+  }
+}

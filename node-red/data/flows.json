@@ -1,0 +1,918 @@
+[
+    {
+        "id": "tab1",
+        "type": "tab",
+        "label": "Aftershock",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "ui_theme_default",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#fcfcfd",
+            "primary": "#0d74ce",
+            "bgPage": "#f9f9fb",
+            "groupBg": "#ffffff",
+            "groupOutline": "#d9d9e0"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "ui_base",
+        "type": "ui-base",
+        "name": "Aftershock Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "ui_page_main",
+        "type": "ui-page",
+        "name": "Aftershock",
+        "ui": "ui_base",
+        "path": "/aftershock",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "ui_theme_default",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": 0,
+                "cols": 3
+            },
+            {
+                "name": "Tablet",
+                "px": 576,
+                "cols": 6
+            },
+            {
+                "name": "Small Desktop",
+                "px": 768,
+                "cols": 9
+            },
+            {
+                "name": "Desktop",
+                "px": 1024,
+                "cols": 12
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "ui_group_main",
+        "type": "ui-group",
+        "name": "Base Station",
+        "page": "ui_page_main",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": true,
+        "disabled": false,
+        "groupType": "default"
+    },
+    {
+        "id": "spacer_before_chart",
+        "type": "ui-spacer",
+        "z": "tab1",
+        "group": "ui_group_main",
+        "name": "spacer",
+        "order": 6,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "httpin_telemetry",
+        "type": "http in",
+        "z": "tab1",
+        "name": "POST /aftershock/telemetry",
+        "url": "/aftershock/telemetry",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 80,
+        "wires": [
+            [
+                "fn_telemetry",
+                "debug_telemetry"
+            ]
+        ]
+    },
+    {
+        "id": "debug_telemetry",
+        "type": "debug",
+        "z": "tab1",
+        "name": "telemetry raw",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 420,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "fn_telemetry",
+        "type": "function",
+        "z": "tab1",
+        "name": "Process telemetry",
+        "func": "var body = msg.payload || {};\nflow.set('lastTelemetry', body);\nvar thresholdG = (body.thresholdCentiG || 0) / 100;\nvar respMsg = Object.assign({}, msg, { payload: 'OK', statusCode: 200 });\nreturn [\n  respMsg,\n  { payload: thresholdG }\n];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 420,
+        "y": 100,
+        "wires": [
+            [
+                "resp_telemetry"
+            ],
+            [
+                "gauge_threshold"
+            ]
+        ]
+    },
+    {
+        "id": "resp_telemetry",
+        "type": "http response",
+        "z": "tab1",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 700,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "gauge_threshold",
+        "type": "ui-gauge",
+        "z": "tab1",
+        "name": "Sensitivity Threshold",
+        "group": "ui_group_main",
+        "order": 1,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Threshold",
+        "alwaysShowTitle": true,
+        "floatingTitlePosition": "top-left",
+        "units": "g",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "color": "#00b500",
+                "value": 2.5
+            },
+            {
+                "color": "#e6e600",
+                "value": 3.5
+            },
+            {
+                "color": "#ca3838",
+                "value": 4
+            }
+        ],
+        "min": 1.5,
+        "max": 4,
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 740,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "inject_test_incident",
+        "type": "inject",
+        "z": "tab1",
+        "name": "TEST: Simulate incident",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "topic": "",
+        "payload": "{\"source\":\"test\",\"latitude\":40.52,\"longitude\":21.26,\"peakG\":3.2}",
+        "payloadType": "json",
+        "x": 190,
+        "y": 300,
+        "wires": [
+            [
+                "fn_felt"
+            ]
+        ]
+    },
+    {
+        "id": "httpin_felt",
+        "type": "http in",
+        "z": "tab1",
+        "name": "POST /aftershock/felt-report",
+        "url": "/aftershock/felt-report",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 190,
+        "y": 260,
+        "wires": [
+            [
+                "fn_felt"
+            ]
+        ]
+    },
+    {
+        "id": "fn_felt",
+        "type": "function",
+        "z": "tab1",
+        "name": "Log incident",
+        "func": "var body = msg.payload || {};\nif (typeof body.latitude === 'number' && typeof body.longitude === 'number') {\n  flow.set('lastKnownLocation', { latitude: body.latitude, longitude: body.longitude, accuracy: body.accuracy });\n}\nvar incidents = flow.get('incidents') || [];\nvar entry = {\n  time: new Date().toISOString(),\n  source: body.source || 'phone',\n  latitude: body.latitude,\n  longitude: body.longitude,\n  accuracy: body.accuracy,\n  peakG: body.peakG\n};\nincidents.unshift(entry);\nincidents = incidents.slice(0, 20);\nflow.set('incidents', incidents);\n\nvar logLine = entry.time + ' - ' + entry.source + (entry.peakG ? (' - ' + entry.peakG + 'g') : '');\nvar respMsg = Object.assign({}, msg, { payload: 'OK', statusCode: 200 });\n\nvar locationLine = (typeof entry.latitude === 'number' && typeof entry.longitude === 'number')\n  ? entry.latitude.toFixed(4) + ', ' + entry.longitude.toFixed(4) + (typeof entry.accuracy === 'number' ? (' (±' + entry.accuracy.toFixed(0) + 'm)') : '')\n  : 'No location reported';\n\nreturn [\n  respMsg,\n  { payload: logLine },\n  { payload: entry },\n  { payload: locationLine }\n];",
+        "outputs": 4,
+        "noerr": 0,
+        "x": 430,
+        "y": 260,
+        "wires": [
+            [
+                "resp_felt"
+            ],
+            [
+                "log_incidents"
+            ],
+            [
+                "fn_check_location"
+            ],
+            [
+                "log_phone_location"
+            ]
+        ]
+    },
+    {
+        "id": "resp_felt",
+        "type": "http response",
+        "z": "tab1",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 680,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "log_incidents",
+        "type": "ui-text",
+        "z": "tab1",
+        "group": "ui_group_main",
+        "order": 3,
+        "width": 4,
+        "height": 2,
+        "name": "Latest Incident",
+        "label": "Latest incident",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": true,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 700,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "log_correlation",
+        "type": "ui-text",
+        "z": "tab1",
+        "group": "ui_group_main",
+        "order": 4,
+        "width": 4,
+        "height": 2,
+        "name": "Correlation Note",
+        "label": "Correlation",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": true,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 720,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "chg_alert_url",
+        "type": "change",
+        "z": "tab1",
+        "name": "Build alert command URL (edit Arduino IP here)",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "\"http://192.168.1.141/alert?level=\" & $string(severity)",
+                "tot": "jsonata"
+            }
+        ],
+        "x": 500,
+        "y": 420,
+        "wires": [
+            [
+                "req_alert"
+            ]
+        ]
+    },
+    {
+        "id": "req_alert",
+        "type": "http request",
+        "z": "tab1",
+        "name": "Send alert to Arduino",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 750,
+        "y": 420,
+        "wires": [
+            [
+                "debug_alert"
+            ]
+        ]
+    },
+    {
+        "id": "debug_alert",
+        "type": "debug",
+        "z": "tab1",
+        "name": "Arduino alert response",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "inject_usgs",
+        "type": "inject",
+        "z": "tab1",
+        "name": "Poll USGS every 2 min",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "120",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 3,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 190,
+        "y": 500,
+        "wires": [
+            [
+                "chg_reference_location"
+            ]
+        ]
+    },
+    {
+        "id": "chg_reference_location",
+        "type": "function",
+        "z": "tab1",
+        "name": "Use real phone location, if known",
+        "func": "var loc = flow.get('lastKnownLocation');\nif (!loc) {\n  return [null, { payload: 'Waiting for a phone location before checking nearby earthquakes.' }];\n}\nmsg.url = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=' + loc.latitude + '&longitude=' + loc.longitude + '&maxradiuskm=300&limit=20&orderby=time';\nreturn [msg, null];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 450,
+        "y": 500,
+        "wires": [
+            [
+                "req_usgs"
+            ],
+            [
+                "log_quake_feed_status"
+            ]
+        ]
+    },
+    {
+        "id": "req_usgs",
+        "type": "http request",
+        "z": "tab1",
+        "name": "GET USGS earthquakes",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 700,
+        "y": 500,
+        "wires": [
+            [
+                "fn_usgs"
+            ]
+        ]
+    },
+    {
+        "id": "fn_usgs",
+        "type": "function",
+        "z": "tab1",
+        "name": "Store quakes + build chart points",
+        "func": "var data = msg.payload;\nvar quakes = [];\nif (data && data.features) {\n  quakes = data.features.map(function (f) {\n    return { time: f.properties.time, mag: f.properties.mag, place: f.properties.place };\n  });\n}\nflow.set('recentQuakes', quakes);\nmsg.payload = quakes;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 950,
+        "y": 500,
+        "wires": [
+            [
+                "split_quakes"
+            ]
+        ]
+    },
+    {
+        "id": "split_quakes",
+        "type": "split",
+        "z": "tab1",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 1160,
+        "y": 500,
+        "wires": [
+            [
+                "fn_quake_point"
+            ]
+        ]
+    },
+    {
+        "id": "fn_quake_point",
+        "type": "function",
+        "z": "tab1",
+        "name": "Extract magnitude",
+        "func": "if (!msg.payload) return null;\nvar quake = msg.payload;\nmsg.topic = 'quakes';\nmsg.quakeTime = quake.time;\nmsg.payload = quake.mag;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1160,
+        "y": 560,
+        "wires": [
+            [
+                "chart_quakes"
+            ]
+        ]
+    },
+    {
+        "id": "chart_quakes",
+        "type": "ui-chart",
+        "z": "tab1",
+        "group": "ui_group_main",
+        "name": "Nearby Earthquakes",
+        "label": "Nearby Quakes (magnitude)",
+        "order": 9,
+        "chartType": "scatter",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "quakeTime",
+        "xAxisPropertyType": "msg",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "Magnitude",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": 0,
+        "ymax": 8,
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": false,
+        "removeOlder": 30,
+        "removeOlderUnit": "86400",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095FF",
+            "#FF0000",
+            "#FF7F0E",
+            "#2CA02C",
+            "#A347E1",
+            "#D62728",
+            "#FF9896",
+            "#9467BD",
+            "#C5B0D5"
+        ],
+        "textColorDefault": true,
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1400,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "httpin_resolve",
+        "type": "http in",
+        "z": "tab1",
+        "name": "POST /aftershock/resolve",
+        "url": "/aftershock/resolve",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 190,
+        "y": 660,
+        "wires": [
+            [
+                "fn_resolve_from_arduino"
+            ]
+        ]
+    },
+    {
+        "id": "fn_resolve_from_arduino",
+        "type": "function",
+        "z": "tab1",
+        "name": "Mark resolved (Arduino button)",
+        "func": "var incidents = flow.get('incidents') || [];\nif (incidents.length > 0) {\n  incidents[0].resolved = true;\n  incidents[0].resolvedBy = 'arduino-button';\n  incidents[0].resolvedAt = new Date().toISOString();\n  flow.set('incidents', incidents);\n}\nvar respMsg = Object.assign({}, msg, { payload: 'OK', statusCode: 200 });\nvar logMsg = { payload: 'Resolved (Arduino button) at ' + new Date().toLocaleTimeString() };\nreturn [respMsg, logMsg];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 460,
+        "y": 660,
+        "wires": [
+            [
+                "resp_resolve"
+            ],
+            [
+                "log_incidents"
+            ]
+        ]
+    },
+    {
+        "id": "resp_resolve",
+        "type": "http response",
+        "z": "tab1",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 700,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "ui_button_resolve",
+        "type": "ui-button",
+        "z": "tab1",
+        "group": "ui_group_main",
+        "name": "Resolve Incident button",
+        "label": "Resolve Incident",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "emulateClick": false,
+        "tooltip": "Clear the active alert on the Arduino and mark it resolved",
+        "color": "",
+        "bgcolor": "#ca3838",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "buttonColor": "",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 190,
+        "y": 700,
+        "wires": [
+            [
+                "chg_resolve_url"
+            ]
+        ]
+    },
+    {
+        "id": "chg_resolve_url",
+        "type": "change",
+        "z": "tab1",
+        "name": "Build resolve URL (edit Arduino IP here)",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "http://192.168.1.141/alert?level=0",
+                "tot": "str"
+            }
+        ],
+        "x": 460,
+        "y": 700,
+        "wires": [
+            [
+                "req_resolve"
+            ]
+        ]
+    },
+    {
+        "id": "req_resolve",
+        "type": "http request",
+        "z": "tab1",
+        "name": "Send resolve to Arduino",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 700,
+        "y": 700,
+        "wires": [
+            [
+                "fn_resolve_from_dashboard"
+            ]
+        ]
+    },
+    {
+        "id": "fn_resolve_from_dashboard",
+        "type": "function",
+        "z": "tab1",
+        "name": "Mark resolved (dashboard)",
+        "func": "var incidents = flow.get('incidents') || [];\nif (incidents.length > 0) {\n  incidents[0].resolved = true;\n  incidents[0].resolvedBy = 'dashboard';\n  incidents[0].resolvedAt = new Date().toISOString();\n  flow.set('incidents', incidents);\n}\nmsg.payload = 'Resolved (dashboard) at ' + new Date().toLocaleTimeString();\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 950,
+        "y": 700,
+        "wires": [
+            [
+                "log_incidents"
+            ]
+        ]
+    },
+    {
+        "id": "httpin_config",
+        "type": "http in",
+        "z": "tab1",
+        "name": "GET /aftershock/config",
+        "url": "/aftershock/config",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 190,
+        "y": 760,
+        "wires": [
+            [
+                "fn_config"
+            ]
+        ]
+    },
+    {
+        "id": "fn_config",
+        "type": "function",
+        "z": "tab1",
+        "name": "Build config response",
+        "func": "var telemetry = flow.get('lastTelemetry') || {};\nvar thresholdG = (telemetry.thresholdCentiG || 250) / 100;\nmsg.payload = { thresholdG: thresholdG };\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 450,
+        "y": 760,
+        "wires": [
+            [
+                "resp_config"
+            ]
+        ]
+    },
+    {
+        "id": "resp_config",
+        "type": "http response",
+        "z": "tab1",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 680,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "fn_check_location",
+        "type": "function",
+        "z": "tab1",
+        "name": "Has coordinates?",
+        "func": "var entry = msg.payload;\nif (typeof entry.latitude === 'number' && typeof entry.longitude === 'number') {\n  return [msg, null];\n} else {\n  return [null, msg];\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 480,
+        "y": 300,
+        "wires": [
+            [
+                "chg_incident_usgs_url"
+            ],
+            [
+                "fn_no_location_correlate"
+            ]
+        ]
+    },
+    {
+        "id": "chg_incident_usgs_url",
+        "type": "change",
+        "z": "tab1",
+        "name": "Build incident-specific USGS query",
+        "rules": [
+            {
+                "t": "set",
+                "p": "incidentEntry",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "\"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=\" & $string(payload.latitude) & \"&longitude=\" & $string(payload.longitude) & \"&maxradiuskm=100&limit=5&orderby=time\"",
+                "tot": "jsonata"
+            }
+        ],
+        "x": 720,
+        "y": 280,
+        "wires": [
+            [
+                "req_incident_usgs"
+            ]
+        ]
+    },
+    {
+        "id": "req_incident_usgs",
+        "type": "http request",
+        "z": "tab1",
+        "name": "GET USGS near incident",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 960,
+        "y": 280,
+        "wires": [
+            [
+                "fn_correlate_with_response"
+            ]
+        ]
+    },
+    {
+        "id": "fn_correlate_with_response",
+        "type": "function",
+        "z": "tab1",
+        "name": "Correlate (real location + time)",
+        "func": "var entry = msg.incidentEntry;\nvar data = msg.payload;\nvar quakes = (data && data.features) ? data.features.map(function (f) {\n  return { time: f.properties.time, mag: f.properties.mag, place: f.properties.place };\n}) : [];\n\nvar now = Date.now();\nvar nearby = quakes.filter(function (q) {\n  return Math.abs(now - q.time) < 15 * 60 * 1000;\n});\n\nvar severity = 1;\nvar note = 'No seismic activity found within 100km in the last 15 minutes - likely a fall or crash.';\nif (nearby.length > 0) {\n  severity = 2;\n  var best = nearby[0];\n  note = 'M' + best.mag + ' quake near ' + best.place + ' recorded around this time - possibly related.';\n}\n\nvar incidents = flow.get('incidents') || [];\nif (incidents.length > 0) {\n  incidents[0].correlation = note;\n  incidents[0].severity = severity;\n  flow.set('incidents', incidents);\n}\n\nmsg.payload = note;\nmsg.severity = severity;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1200,
+        "y": 280,
+        "wires": [
+            [
+                "chg_alert_url",
+                "log_correlation"
+            ]
+        ]
+    },
+    {
+        "id": "fn_no_location_correlate",
+        "type": "function",
+        "z": "tab1",
+        "name": "No coordinates available",
+        "func": "var severity = 1;\nvar note = 'No location reported - cannot correlate with seismic data.';\n\nvar incidents = flow.get('incidents') || [];\nif (incidents.length > 0) {\n  incidents[0].correlation = note;\n  incidents[0].severity = severity;\n  flow.set('incidents', incidents);\n}\n\nmsg.payload = note;\nmsg.severity = severity;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 720,
+        "y": 340,
+        "wires": [
+            [
+                "chg_alert_url",
+                "log_correlation"
+            ]
+        ]
+    },
+    {
+        "id": "log_phone_location",
+        "type": "ui-text",
+        "z": "tab1",
+        "group": "ui_group_main",
+        "order": 8,
+        "width": 4,
+        "height": 2,
+        "name": "Phone Location",
+        "label": "Phone location",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": true,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 700,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "log_quake_feed_status",
+        "type": "ui-text",
+        "z": "tab1",
+        "group": "ui_group_main",
+        "order": 8.5,
+        "width": 4,
+        "height": 2,
+        "name": "Quake Feed Status",
+        "label": "Nearby quakes",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": true,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 700,
+        "y": 540,
+        "wires": []
+    }
+]
